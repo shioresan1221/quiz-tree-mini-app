@@ -1,13 +1,35 @@
+const TOTAL_QUESTION_BANK = 972;
+const LEVEL_STAGES = 5;
+const STAGE_SIZE = Math.ceil(TOTAL_QUESTION_BANK / LEVEL_STAGES);
+
 export const LEVELS = [
-  { index: 0, name: "Seed", icon: "🌱", minCoins: 0, maxCoins: 24 },
-  { index: 1, name: "Sprout", icon: "🌿", minCoins: 25, maxCoins: 74 },
-  { index: 2, name: "Sapling", icon: "🪴", minCoins: 75, maxCoins: 179 },
-  { index: 3, name: "Mature Tree", icon: "🌳", minCoins: 180, maxCoins: 359 },
+  { index: 0, name: "Seed", icon: "🌰", minCoins: 0, maxCoins: STAGE_SIZE - 1 },
+  {
+    index: 1,
+    name: "Sprout",
+    icon: "🌱",
+    minCoins: STAGE_SIZE,
+    maxCoins: STAGE_SIZE * 2 - 1
+  },
+  {
+    index: 2,
+    name: "Seedling",
+    icon: "🌿",
+    minCoins: STAGE_SIZE * 2,
+    maxCoins: STAGE_SIZE * 3 - 1
+  },
+  {
+    index: 3,
+    name: "Young Plant",
+    icon: "🪴",
+    minCoins: STAGE_SIZE * 3,
+    maxCoins: STAGE_SIZE * 4 - 1
+  },
   {
     index: 4,
-    name: "Ancient Tree",
-    icon: "👑",
-    minCoins: 360,
+    name: "Tree",
+    icon: "🌳",
+    minCoins: STAGE_SIZE * 4,
     maxCoins: Number.POSITIVE_INFINITY
   }
 ] as const;

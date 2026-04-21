@@ -108,7 +108,8 @@ export function QuizScreen() {
         telegramId: user.Telegram_ID,
         username: user.Username,
         coinDelta: isCorrect ? correctReward : -wrongPenalty,
-        mistakeIds: updatedMistakes
+        mistakeIds: updatedMistakes,
+        correctIncrement: isCorrect ? 1 : 0
       });
 
       setUser(updatedUser);

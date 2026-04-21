@@ -12,7 +12,8 @@ export async function fetchOrCreateUser(telegramId: string, username: string) {
     Username: username,
     Coins: 0,
     Level: 1,
-    Mistake_IDs: ""
+    Mistake_IDs: "",
+    Correct_Answers: 0
   };
 
   await sheetDbRequest(`${getBaseUrl()}?sheet=${encodeURIComponent(getUsersSheet())}`, {
@@ -51,7 +52,8 @@ export async function submitAnswerResult(payload: UpdateProgressPayload) {
       Username: payload.username,
       Coins: 0,
       Level: 1,
-      Mistake_IDs: ""
+      Mistake_IDs: "",
+      Correct_Answers: 0
     } satisfies UserRecord);
 
   const nextCoins =
@@ -64,7 +66,8 @@ export async function submitAnswerResult(payload: UpdateProgressPayload) {
     Username: payload.username || existing.Username,
     Coins: nextCoins,
     Level: coinsToLevel(nextCoins),
-    Mistake_IDs: payload.mistakeIds ?? existing.Mistake_IDs ?? ""
+    Mistake_IDs: payload.mistakeIds ?? existing.Mistake_IDs ?? "",
+    Correct_Answers: Number(existing.Correct_Answers ?? 0) + (payload.correctIncrement ?? 0)
   };
 
   await sheetDbRequest(
@@ -76,7 +79,8 @@ export async function submitAnswerResult(payload: UpdateProgressPayload) {
           Username: updated.Username,
           Coins: updated.Coins,
           Level: updated.Level,
-          Mistake_IDs: updated.Mistake_IDs
+          Mistake_IDs: updated.Mistake_IDs,
+          Correct_Answers: updated.Correct_Answers
         }
       })
     }
@@ -138,7 +142,8 @@ function normalizeUser(user: UserRecord): UserRecord {
   return {
     ...user,
     Coins: Number(user.Coins ?? 0),
-    Level: Number(user.Level ?? 1)
+    Level: Number(user.Level ?? 1),
+    Correct_Answers: Number(user.Correct_Answers ?? 0)
   };
 }
 

@@ -98,7 +98,8 @@ export async function ensureUser({
     Username: username,
     Coins: 0,
     Level: 1,
-    Mistake_IDs: ""
+    Mistake_IDs: "",
+    Correct_Answers: 0
   };
 
   if (!SHEETDB_BASE_URL) {
@@ -128,7 +129,8 @@ export async function updateUserProgress(payload: UpdateProgressPayload) {
     Username: payload.username || existing.Username,
     Coins: nextCoins,
     Level: coinsToLevel(nextCoins),
-    Mistake_IDs: payload.mistakeIds ?? existing.Mistake_IDs ?? ""
+    Mistake_IDs: payload.mistakeIds ?? existing.Mistake_IDs ?? "",
+    Correct_Answers: Number(existing.Correct_Answers ?? 0) + (payload.correctIncrement ?? 0)
   };
 
   if (!SHEETDB_BASE_URL) {
@@ -144,7 +146,8 @@ export async function updateUserProgress(payload: UpdateProgressPayload) {
           Username: updated.Username,
           Coins: updated.Coins,
           Level: updated.Level,
-          Mistake_IDs: updated.Mistake_IDs
+          Mistake_IDs: updated.Mistake_IDs,
+          Correct_Answers: updated.Correct_Answers
         }
       })
     }
@@ -187,7 +190,8 @@ function normalizeUser(record: UserRecord): UserRecord {
     ...record,
     Coins: Number(record.Coins ?? 0),
     Level: Number(record.Level ?? 1),
-    Mistake_IDs: record.Mistake_IDs ?? ""
+    Mistake_IDs: record.Mistake_IDs ?? "",
+    Correct_Answers: Number(record.Correct_Answers ?? 0)
   };
 }
 

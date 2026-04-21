@@ -360,7 +360,9 @@ export function HomeScreen() {
                     <div>
                       <p className="text-lg font-black">{entry.Username}</p>
                       <p className="mt-1 text-xs uppercase tracking-[0.24em] text-white/40">
-                        Level {entry.Level}
+                        {entry.Level >= 5
+                          ? `Lvl 5 · ${entry.Correct_Answers} leaves`
+                          : `Level ${entry.Level}`}
                         {entry.Telegram_ID === user?.Telegram_ID ? " · You" : ""}
                       </p>
                     </div>
