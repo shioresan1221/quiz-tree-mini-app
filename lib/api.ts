@@ -27,6 +27,22 @@ export async function syncTapReward(telegramId: string, username: string, coinDe
   return submitAnswerResult({ telegramId, username, coinDelta });
 }
 
+export async function updateDisplayName(telegramId: string, username: string) {
+  return submitAnswerResult({ telegramId, username, coinDelta: 0 });
+}
+
+export async function fetchLeaderboard(limit = 8) {
+  const rows = await sheetDbRequest<UserRecord[]>(
+    `${getBaseUrl()}?sheet=${encodeURIComponent(getUsersSheet())}`
+  );
+
+  return rows
+    .map(normalizeUser)
+    .filter((user) => user.Username?.trim())
+    .sort((left, right) => right.Coins - left.Coins)
+    .slice(0, limit);
+}
+
 export async function submitAnswerResult(payload: UpdateProgressPayload) {
   const existing =
     (await fetchUserByTelegramId(payload.telegramId)) ??
@@ -80,22 +96,6 @@ export async function fetchQuestions({
   count?: number;
   mistakes?: string;
 }) {
-  const params = new URLSearchParams({
-    mode
-  });
-
-  if (subject) {
-    params.set("subject", subject);
-  }
-
-  if (count) {
-    params.set("count", String(count));
-  }
-
-  if (mistakes) {
-    params.set("mistakes", mistakes);
-  }
-
   const rows = await sheetDbRequest<Array<QuestionRecord & { SUBJECT?: string }>>(
     `${getBaseUrl()}?sheet=${encodeURIComponent(getQuestionsSheet())}`
   );

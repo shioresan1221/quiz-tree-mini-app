@@ -61,6 +61,7 @@ export function QuizScreen() {
 
   const currentQuestion = questions[index];
   const swipeEnabled = feedback === "correct";
+  const progress = questions.length ? ((index + 1) / questions.length) * 100 : 0;
 
   const title = useMemo(() => {
     switch (mode) {
@@ -72,6 +73,19 @@ export function QuizScreen() {
         return "Mistake Library";
       default:
         return "Standard Feed";
+    }
+  }, [count, mode, subject]);
+
+  const modeRule = useMemo(() => {
+    switch (mode) {
+      case "mock":
+        return `100 random ${subject ?? "subject"} questions with full reward and penalty rules.`;
+      case "custom":
+        return `Short-form session with ${count} selected items.`;
+      case "review":
+        return "You are only seeing questions saved in your mistake library.";
+      default:
+        return "Swipe up stays locked until the answer on screen is correct.";
     }
   }, [count, mode, subject]);
 
@@ -121,12 +135,12 @@ export function QuizScreen() {
 
   if (loading) {
     return (
-      <main className="flex min-h-screen items-center justify-center px-6 text-center">
+      <main className="flex min-h-screen items-center justify-center bg-[#070b14] px-6 text-center text-white">
         <div>
-          <p className="text-sm font-semibold uppercase tracking-[0.2em] text-moss/70">
-            Quiz Tree
+          <p className="text-xs font-semibold uppercase tracking-[0.35em] text-white/45">
+            Quiz Tree Feed
           </p>
-          <h1 className="mt-3 text-3xl font-black">Loading quiz feed...</h1>
+          <h1 className="mt-4 text-4xl font-black">Loading your stream...</h1>
         </div>
       </main>
     );
@@ -134,18 +148,18 @@ export function QuizScreen() {
 
   if (!currentQuestion) {
     return (
-      <main className="flex min-h-screen items-center justify-center px-6">
-        <div className="max-w-md rounded-[28px] bg-white/80 p-6 text-center shadow-bloom">
-          <p className="text-sm font-semibold uppercase tracking-[0.2em] text-moss/70">
+      <main className="flex min-h-screen items-center justify-center bg-[#070b14] px-6">
+        <div className="max-w-md rounded-[32px] border border-white/10 bg-white/5 p-6 text-center text-white shadow-[0_30px_80px_rgba(0,0,0,0.45)]">
+          <p className="text-xs font-semibold uppercase tracking-[0.3em] text-white/45">
             {title}
           </p>
           <h1 className="mt-3 text-3xl font-black">No questions found</h1>
-          <p className="mt-3 text-sm text-moss/80">
-            Check your sheet data or make sure Review Mode has mistake IDs stored.
+          <p className="mt-3 text-sm leading-6 text-white/65">
+            Check your sheet data or make sure Review Mode has stored mistake IDs.
           </p>
           <Link
             href="/"
-            className="mt-5 inline-flex rounded-full bg-ink px-5 py-3 font-bold text-white"
+            className="mt-5 inline-flex rounded-full bg-white px-5 py-3 font-black text-black"
           >
             Back Home
           </Link>
@@ -155,103 +169,138 @@ export function QuizScreen() {
   }
 
   return (
-    <main className="min-h-screen px-4 py-4">
-      <div className="mx-auto flex max-w-xl flex-col gap-3">
-        <header className="rounded-[24px] bg-white/75 p-4 shadow-bloom backdrop-blur">
+    <main className="min-h-screen overflow-hidden bg-[#070b14] text-white">
+      <div className="relative mx-auto flex min-h-screen w-full max-w-xl flex-col px-3 py-3">
+        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(236,72,153,0.16),transparent_24%),radial-gradient(circle_at_80%_20%,rgba(34,211,238,0.14),transparent_24%),radial-gradient(circle_at_bottom,rgba(245,158,11,0.12),transparent_30%)]" />
+
+        <header className="relative z-10 rounded-[28px] border border-white/10 bg-black/25 px-4 py-3 backdrop-blur">
           <div className="flex items-center justify-between gap-3">
             <div>
-              <p className="text-sm font-semibold uppercase tracking-[0.2em] text-moss/70">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.32em] text-white/42">
                 {title}
               </p>
-              <h1 className="mt-2 text-2xl font-black">
+              <p className="mt-1 text-lg font-black">
                 {index + 1} / {questions.length}
-              </h1>
+              </p>
             </div>
             <div className="text-right">
-              <p className="text-xs uppercase tracking-[0.2em] text-moss/70">Coins</p>
-              <p className="text-xl font-bold">{user?.Coins ?? 0}</p>
+              <p className="text-[11px] uppercase tracking-[0.28em] text-white/42">Coins</p>
+              <p className="mt-1 text-xl font-black">{user?.Coins ?? 0}</p>
             </div>
+          </div>
+          <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-white/10">
+            <div
+              className="h-full rounded-full bg-gradient-to-r from-[#f59e0b] via-[#f472b6] to-[#22d3ee]"
+              style={{ width: `${progress}%` }}
+            />
           </div>
         </header>
 
-        <div className="relative h-[72vh] overflow-hidden rounded-[32px]">
+        <div className="relative mt-3 flex-1 overflow-hidden rounded-[34px] border border-white/10 bg-black/20">
           <AnimatePresence mode="wait">
             <motion.article
               key={currentQuestion.ID}
               drag="y"
               dragConstraints={{ top: 0, bottom: 0 }}
-              dragElastic={swipeEnabled ? 0.14 : 0.02}
+              dragElastic={swipeEnabled ? 0.16 : 0.03}
               onDragEnd={onDragEnd}
               initial={{ opacity: 0, y: 60 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -120 }}
-              transition={{ duration: 0.28, ease: "easeOut" }}
-              className="absolute inset-0 rounded-[32px] bg-white/90 p-5 shadow-bloom backdrop-blur"
+              transition={{ duration: 0.26, ease: "easeOut" }}
+              className="absolute inset-0"
             >
-              <div className="flex h-full flex-col">
-                <div className="flex items-center justify-between gap-3">
-                  <p className="rounded-full bg-mist px-3 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-moss/70">
-                    {currentQuestion.Subject}
-                  </p>
-                  <p className="text-sm font-medium text-moss/80">
-                    Correct: +{correctReward} / Wrong: -{wrongPenalty}
-                  </p>
+              <div className="relative flex h-full flex-col overflow-hidden bg-[linear-gradient(180deg,#101827_0%,#090d16_100%)] p-5">
+                <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(236,72,153,0.18),transparent_26%),radial-gradient(circle_at_80%_20%,rgba(34,211,238,0.16),transparent_22%),radial-gradient(circle_at_bottom,rgba(245,158,11,0.14),transparent_28%)]" />
+
+                <div className="relative z-10 flex items-start justify-between gap-4">
+                  <div className="max-w-[70%]">
+                    <p className="inline-flex rounded-full border border-white/10 bg-white/5 px-3 py-2 text-[11px] font-semibold uppercase tracking-[0.28em] text-white/55">
+                      {currentQuestion.Subject}
+                    </p>
+                    <h2 className="mt-5 text-[2rem] font-black leading-[1.02]">
+                      {currentQuestion.Question}
+                    </h2>
+                  </div>
+
+                  <div className="flex flex-col items-center gap-3">
+                    <ActionPill label="coins" value={`+${correctReward}`} />
+                    <ActionPill label="risk" value={`-${wrongPenalty}`} />
+                    <ActionPill label="next" value={swipeEnabled ? "on" : "off"} />
+                  </div>
                 </div>
 
-                <div className="mt-6 flex-1">
-                  <h2 className="text-3xl font-black leading-tight">
-                    {currentQuestion.Question}
-                  </h2>
-
-                  <div className="mt-6 grid gap-3">
-                    {questionOptions(currentQuestion).map(([key, value]) => {
+                <div className="relative z-10 mt-6 flex-1">
+                  <div className="grid gap-3">
+                    {questionOptions(currentQuestion).map(([key, value], optionIndex) => {
                       const active = selected === key;
                       const isCorrect = key === currentQuestion.Correct_Answer;
-                      const showCorrect = feedback && isCorrect;
+                      const showCorrect = Boolean(feedback) && isCorrect;
                       const showWrong = feedback === "wrong" && active && !isCorrect;
 
                       return (
-                        <button
+                        <motion.button
                           key={key}
                           type="button"
                           disabled={answering}
                           onClick={() => handleAnswer(key)}
+                          initial={{ opacity: 0, y: 24 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ delay: optionIndex * 0.04 }}
                           className={[
-                            "rounded-[24px] border px-4 py-4 text-left transition",
-                            "border-moss/10 bg-mist",
-                            active ? "ring-2 ring-ink/20" : "",
-                            showCorrect ? "border-leaf bg-green-100" : "",
-                            showWrong ? "border-red-300 bg-red-100" : ""
+                            "rounded-[26px] border px-4 py-4 text-left transition",
+                            "border-white/10 bg-white/6 backdrop-blur",
+                            active ? "ring-2 ring-white/25" : "",
+                            showCorrect ? "border-emerald-400/60 bg-emerald-500/18" : "",
+                            showWrong ? "border-rose-400/60 bg-rose-500/18" : ""
                           ].join(" ")}
                         >
-                          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-moss/70">
+                          <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-white/45">
                             {key.replace("_", " ")}
                           </p>
-                          <p className="mt-2 text-lg font-semibold">{value}</p>
-                        </button>
+                          <p className="mt-2 text-lg font-semibold leading-7 text-white/92">
+                            {value}
+                          </p>
+                        </motion.button>
                       );
                     })}
                   </div>
                 </div>
 
-                <div className="mt-5 rounded-[22px] bg-ink px-4 py-4 text-white">
-                  <p className="text-sm font-semibold uppercase tracking-[0.2em] text-white/60">
-                    Feed Rule
-                  </p>
-                  <p className="mt-2 text-sm">
-                    Swipe up is locked until the answer is correct. Wrong answers stay on this card and save the ID into the mistake library.
-                  </p>
+                <div className="relative z-10 mt-5 rounded-[28px] border border-white/10 bg-black/30 p-4 backdrop-blur">
+                  <div className="flex items-start justify-between gap-4">
+                    <div>
+                      <p className="text-[11px] font-semibold uppercase tracking-[0.32em] text-white/42">
+                        Mode Rule
+                      </p>
+                      <p className="mt-2 text-sm leading-6 text-white/72">{modeRule}</p>
+                    </div>
+                    <div
+                      className={[
+                        "rounded-full px-3 py-2 text-[11px] font-semibold uppercase tracking-[0.22em]",
+                        swipeEnabled
+                          ? "bg-emerald-500/18 text-emerald-200"
+                          : "bg-white/8 text-white/55"
+                      ].join(" ")}
+                    >
+                      {swipeEnabled ? "Swipe Ready" : "Locked"}
+                    </div>
+                  </div>
+
                   <div className="mt-4 flex items-center justify-between gap-3">
-                    <Link href="/" className="rounded-full bg-white/15 px-4 py-2 font-bold">
+                    <Link
+                      href="/"
+                      className="rounded-full border border-white/10 bg-white/5 px-4 py-3 font-bold text-white/80"
+                    >
                       Exit
                     </Link>
                     <button
                       type="button"
                       onClick={goNext}
                       disabled={!swipeEnabled}
-                      className="rounded-full bg-white px-4 py-2 font-bold text-ink disabled:cursor-not-allowed disabled:bg-white/30 disabled:text-white/60"
+                      className="rounded-full bg-white px-5 py-3 font-black text-black disabled:cursor-not-allowed disabled:bg-white/20 disabled:text-white/40"
                     >
-                      {index >= questions.length - 1 ? "Run Complete" : "Next Question"}
+                      {index >= questions.length - 1 ? "Run Complete" : "Next Card"}
                     </button>
                   </div>
                 </div>
@@ -271,4 +320,13 @@ function questionOptions(question: QuestionRecord) {
     ["Option_C", question.Option_C],
     ["Option_D", question.Option_D]
   ] as const;
+}
+
+function ActionPill({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="flex min-w-16 flex-col items-center rounded-[22px] border border-white/10 bg-white/5 px-3 py-3 backdrop-blur">
+      <p className="text-[10px] uppercase tracking-[0.24em] text-white/35">{label}</p>
+      <p className="mt-2 text-sm font-black text-white">{value}</p>
+    </div>
+  );
 }
