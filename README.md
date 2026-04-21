@@ -8,6 +8,7 @@ A Telegram Mini App quiz game with:
 - Custom exam lengths
 - Review mode from the user's mistake library
 - Google Sheets backend through SheetDB
+- Admin-only Telegram bot question entry
 
 ## Stack
 
@@ -38,9 +39,9 @@ cp .env.example .env.local
 
 ```env
 NEXT_PUBLIC_APP_URL=http://localhost:3000
-SHEETDB_BASE_URL=https://sheetdb.io/api/v1/YOUR_SHEETDB_ID
-SHEETDB_QUESTIONS_SHEET=Questions
-SHEETDB_USERS_SHEET=Users
+NEXT_PUBLIC_SHEETDB_BASE_URL=https://sheetdb.io/api/v1/YOUR_SHEETDB_ID
+NEXT_PUBLIC_SHEETDB_QUESTIONS_SHEET=Questions
+NEXT_PUBLIC_SHEETDB_USERS_SHEET=Users
 ```
 
 4. Start the app:
@@ -49,7 +50,7 @@ SHEETDB_USERS_SHEET=Users
 npm run dev
 ```
 
-If `SHEETDB_BASE_URL` is missing, the app falls back to a small in-memory demo dataset so the UI still loads.
+The deployed site should use the same values as Netlify environment variables.
 
 ## What is implemented
 
@@ -86,14 +87,14 @@ Create one Google Spreadsheet with these exact sheet names:
 
 Use row 1 as headers:
 
-| ID | Subject | Question | Option_A | Option_B | Option_C | Option_D | Correct_Answer |
+| ID | SUBJECT | Question | Option_A | Option_B | Option_C | Option_D | Correct_Answer |
 |---|---|---|---|---|---|---|---|
-| 1 | Math | What is 2+2? | 3 | 4 | 5 | 6 | Option_B |
+| 1 | Crop Science | What is 2+2? | 3 | 4 | 5 | 6 | Option_B |
 
 Rules:
 
 - `ID` must be unique
-- `Subject` should match your subject names exactly
+- `SUBJECT` should match your subject names exactly
 - `Correct_Answer` must be one of `Option_A`, `Option_B`, `Option_C`, `Option_D`
 - Add all 1,000 questions under the header row
 
@@ -111,6 +112,21 @@ Rules:
 - `Coins` and `Level` should be numbers
 - `Mistake_IDs` is a comma-separated list like `14,25,62`
 
+### Sheet 3: `Admins` (optional but recommended)
+
+Use row 1 as headers:
+
+| Telegram_ID | Username | Role | Active |
+|---|---|---|---|
+|  | JNNS0105 | admin | TRUE |
+
+Rules:
+
+- `Username` can be stored with or without `@`
+- `Telegram_ID` can be blank if you authorize by username
+- `Active` should be `TRUE` or `FALSE`
+- You can also bootstrap access with env vars if this sheet is empty
+
 ## How to connect SheetDB
 
 1. Create the Google Sheet.
@@ -123,12 +139,12 @@ Rules:
 https://sheetdb.io/api/v1/abc123xyz
 ```
 
-6. Put that URL in `.env.local` as `SHEETDB_BASE_URL`.
+6. Put that URL in `.env.local` as `NEXT_PUBLIC_SHEETDB_BASE_URL`.
 7. Keep:
 
 ```env
-SHEETDB_QUESTIONS_SHEET=Questions
-SHEETDB_USERS_SHEET=Users
+NEXT_PUBLIC_SHEETDB_QUESTIONS_SHEET=Questions
+NEXT_PUBLIC_SHEETDB_USERS_SHEET=Users
 ```
 
 The app uses these SheetDB operations:
@@ -137,6 +153,67 @@ The app uses these SheetDB operations:
 - `GET /search?sheet=Users&Telegram_ID=...` to load a user
 - `POST /?sheet=Users` to create a user
 - `PATCH /Telegram_ID/<id>?sheet=Users` to update coins, level, and mistakes
+- `POST /?sheet=Questions` to append bot-submitted questions
+
+## Telegram admin bot for adding questions
+
+This project includes a Netlify Function webhook at:
+
+```text
+/.netlify/functions/telegram-webhook
+```
+
+Add these Netlify environment variables:
+
+```env
+SHEETDB_BASE_URL=https://sheetdb.io/api/v1/YOUR_SHEETDB_ID
+SHEETDB_QUESTIONS_SHEET=Questions
+SHEETDB_USERS_SHEET=Users
+SHEETDB_ADMINS_SHEET=Admins
+TELEGRAM_BOT_TOKEN=replace_with_new_token
+TELEGRAM_ADMIN_USERNAMES=JNNS0105
+TELEGRAM_ADMIN_IDS=
+```
+
+Important:
+
+- Use a fresh bot token. The older token shared in chat should be revoked.
+- `TELEGRAM_ADMIN_USERNAMES` is the bootstrap allowlist.
+- After that, admins can authorize more users with `/authorize`.
+
+Set the bot webhook after deploy:
+
+```text
+https://api.telegram.org/bot<YOUR_BOT_TOKEN>/setWebhook?url=https://visionary-douhua-cf3099.netlify.app/.netlify/functions/telegram-webhook
+```
+
+Supported bot commands:
+
+```text
+/whoami
+/helpadmin
+/authorize @username
+/authorize 123456789
+```
+
+Add a question in one message:
+
+```text
+/addquestion | Crop Science | What is Agriculture? | the branch of agriculture concerned with field crop production and soil management | the branch of agriculture dealing with fruits, vegetables, ornamentals, and plantation crops | an approach that raises productivity, builds resilience, and lowers emissions where possible | the science, art, and business of cultivating crops and raising livestock | Option_D
+```
+
+Or use the multiline format:
+
+```text
+/addquestion
+SUBJECT: Crop Science
+QUESTION: What is Agriculture?
+A: the branch of agriculture concerned with field crop production and soil management
+B: the branch of agriculture dealing with fruits, vegetables, ornamentals, and plantation crops
+C: an approach that raises productivity, builds resilience, and lowers emissions where possible
+D: the science, art, and business of cultivating crops and raising livestock
+ANSWER: Option_D
+```
 
 ## How to register the Telegram bot and Mini App
 
@@ -165,25 +242,25 @@ Important:
 
 ## Recommended deployment
 
-The easiest path is Vercel:
+The current project is configured for Netlify static hosting plus Netlify Functions:
 
 1. Push this project to GitHub.
-2. Import the repo into [Vercel](https://vercel.com/).
-3. Add the same environment variables from `.env.local`.
+2. Import the repo into [Netlify](https://www.netlify.com/).
+3. Add the `NEXT_PUBLIC_*` app variables and the Telegram/SheetDB admin bot variables.
 4. Deploy.
-5. Copy the production URL into BotFather.
+5. Copy the production URL into BotFather and use it for both the Mini App and webhook.
 
 ## Project structure
 
 ```text
 app/
-  api/
-    questions/route.ts
-    users/route.ts
   quiz/page.tsx
   globals.css
   layout.tsx
   page.tsx
+netlify/
+  functions/
+    telegram-webhook.mjs
 components/
   home-screen.tsx
   quiz-screen.tsx
@@ -201,7 +278,6 @@ lib/
 
 - Home farming UI: [app/page.tsx](C:/Users/Admin/Documents/New%20project/app/page.tsx)
 - Quiz feed UI: [app/quiz/page.tsx](C:/Users/Admin/Documents/New%20project/app/quiz/page.tsx)
-- Question API: [app/api/questions/route.ts](C:/Users/Admin/Documents/New%20project/app/api/questions/route.ts)
-- User API: [app/api/users/route.ts](C:/Users/Admin/Documents/New%20project/app/api/users/route.ts)
 - Leveling logic: [lib/game.ts](C:/Users/Admin/Documents/New%20project/lib/game.ts)
-- SheetDB logic: [lib/sheets.ts](C:/Users/Admin/Documents/New%20project/lib/sheets.ts)
+- SheetDB client logic: [lib/api.ts](C:/Users/Admin/Documents/New%20project/lib/api.ts)
+- Bot webhook: [netlify/functions/telegram-webhook.mjs](C:/Users/Admin/Documents/New%20project/netlify/functions/telegram-webhook.mjs)
