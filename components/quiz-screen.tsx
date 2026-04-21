@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { AnimatePresence, motion, PanInfo } from "framer-motion";
 import { useEffect, useMemo, useState } from "react";
 import { fetchOrCreateUser, fetchQuestions, submitAnswerResult } from "@/lib/api";
@@ -11,11 +12,8 @@ import { joinMistakes } from "@/lib/game";
 const correctReward = 100;
 const wrongPenalty = 50;
 
-export function QuizScreen({
-  searchParams
-}: {
-  searchParams: Record<string, string | string[] | undefined>;
-}) {
+export function QuizScreen() {
+  const searchParams = useSearchParams();
   const { profile, ready } = useTelegramProfile();
   const [questions, setQuestions] = useState<QuestionRecord[]>([]);
   const [user, setUser] = useState<UserRecord | null>(null);
@@ -25,10 +23,10 @@ export function QuizScreen({
   const [loading, setLoading] = useState(true);
   const [answering, setAnswering] = useState(false);
 
-  const mode = getSingleParam(searchParams.mode, "standard") as QuestionMode;
-  const subject = getSingleParam(searchParams.subject);
-  const count = Number(getSingleParam(searchParams.count, "20"));
-  const mistakes = getSingleParam(searchParams.mistakes, "");
+  const mode = (searchParams.get("mode") ?? "standard") as QuestionMode;
+  const subject = searchParams.get("subject") ?? undefined;
+  const count = Number(searchParams.get("count") ?? "20");
+  const mistakes = searchParams.get("mistakes") ?? "";
 
   useEffect(() => {
     if (!ready) {
@@ -273,12 +271,4 @@ function questionOptions(question: QuestionRecord) {
     ["Option_C", question.Option_C],
     ["Option_D", question.Option_D]
   ] as const;
-}
-
-function getSingleParam(value: string | string[] | undefined, fallback?: string) {
-  if (Array.isArray(value)) {
-    return value[0] ?? fallback;
-  }
-
-  return value ?? fallback;
 }
