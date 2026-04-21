@@ -1,4 +1,10 @@
-import { QuestionMode, QuestionRecord, UpdateProgressPayload, UserRecord } from "@/lib/types";
+import {
+  AccessRecord,
+  QuestionMode,
+  QuestionRecord,
+  UpdateProgressPayload,
+  UserRecord
+} from "@/lib/types";
 import { coinsToLevel } from "@/lib/game";
 
 export async function fetchOrCreateUser(telegramId: string, username: string) {
@@ -44,6 +50,49 @@ export async function fetchLeaderboard(limit = 8) {
     .filter((user) => user.Username?.trim())
     .sort((left, right) => right.Coins - left.Coins)
     .slice(0, limit);
+}
+
+export async function fetchAccessState(telegramId: string, username: string) {
+  if (telegramId === "demo-user" || isOwner(username, telegramId)) {
+    return { authorized: true, pending: false };
+  }
+
+  const rows = await sheetDbRequest<AccessRecord[]>(
+    `${getBaseUrl()}?sheet=${encodeURIComponent(getAccessSheet())}`
+  );
+
+  const normalizedUsername = username.trim().replace(/^@/, "").toLowerCase();
+  const existing = rows.find((entry) => {
+    const rowId = String(entry.Telegram_ID ?? "").trim();
+    const rowUsername = String(entry.Username ?? "")
+      .trim()
+      .replace(/^@/, "")
+      .toLowerCase();
+    return rowId === telegramId || (normalizedUsername && rowUsername === normalizedUsername);
+  });
+
+  if (existing) {
+    return {
+      authorized: String(existing.Active ?? "").toLowerCase() === "true",
+      pending: String(existing.Active ?? "").toLowerCase() !== "true"
+    };
+  }
+
+  await sheetDbRequest(`${getBaseUrl()}?sheet=${encodeURIComponent(getAccessSheet())}`, {
+    method: "POST",
+    body: JSON.stringify({
+      data: [
+        {
+          Telegram_ID: telegramId,
+          Username: username,
+          Active: "FALSE",
+          Approved_By: ""
+        }
+      ]
+    })
+  });
+
+  return { authorized: false, pending: true };
 }
 
 export async function submitAnswerResult(payload: UpdateProgressPayload) {
@@ -211,6 +260,28 @@ function getQuestionsSheet() {
 
 function getUsersSheet() {
   return process.env.NEXT_PUBLIC_SHEETDB_USERS_SHEET ?? "Users";
+}
+
+function getAccessSheet() {
+  return process.env.NEXT_PUBLIC_SHEETDB_ACCESS_SHEET ?? "Authorized_Users";
+}
+
+function isOwner(username: string, telegramId: string) {
+  const envUsernames = (process.env.NEXT_PUBLIC_OWNER_USERNAMES ??
+    process.env.NEXT_PUBLIC_ADMIN_USERNAMES ??
+    "")
+    .split(",")
+    .map((value) => value.trim().replace(/^@/, "").toLowerCase())
+    .filter(Boolean);
+  const envIds = (process.env.NEXT_PUBLIC_OWNER_IDS ??
+    process.env.NEXT_PUBLIC_ADMIN_IDS ??
+    "")
+    .split(",")
+    .map((value) => value.trim())
+    .filter(Boolean);
+
+  const normalizedUsername = username.trim().replace(/^@/, "").toLowerCase();
+  return envIds.includes(telegramId) || (normalizedUsername && envUsernames.includes(normalizedUsername));
 }
 
 function shuffle<T>(items: T[]) {

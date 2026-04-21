@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import { TelegramProvider } from "@/components/telegram-provider";
+import { AccessGate } from "@/components/access-gate";
 
 export const metadata: Metadata = {
   title: "Quiz Tree Mini App",
@@ -15,7 +16,9 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
-        <TelegramProvider>{children}</TelegramProvider>
+        <TelegramProvider>
+          <AccessGate>{children}</AccessGate>
+        </TelegramProvider>
       </body>
     </html>
   );

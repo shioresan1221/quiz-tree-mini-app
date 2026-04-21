@@ -48,6 +48,7 @@ export function HomeScreen() {
   const [selectedSubject, setSelectedSubject] = useState<string>("All_Questions");
   const [selectedCustomCount, setSelectedCustomCount] = useState<number>(CUSTOM_COUNTS[0]);
   const [activePreset, setActivePreset] = useState<ModePreset | null>(null);
+  const [mockSubject, setMockSubject] = useState<string>("Crop Science");
   const [draftName, setDraftName] = useState("");
   const [showNameEditor, setShowNameEditor] = useState(false);
 
@@ -105,17 +106,12 @@ export function HomeScreen() {
         mode: "mock",
         title: "Mock Exam",
         eyebrow: "100 Questions",
-        summary:
-          selectedSubject === "All_Questions"
-            ? "Mock exam using 100 random questions from the full bank."
-            : `Mock exam using 100 random ${selectedSubject} questions.`,
+        summary: `Mock exam using 100 random ${mockSubject} questions.`,
         accent: "from-cyan-500/30 via-sky-400/10 to-blue-500/25",
         getHref: () =>
-          `/quiz?mode=mock&subject=${encodeURIComponent(selectedSubject)}&count=100`,
+          `/quiz?mode=mock&subject=${encodeURIComponent(mockSubject)}&count=100`,
         rules: [
-          selectedSubject === "All_Questions"
-            ? "Loads 100 random questions from the full question bank."
-            : `Loads 100 random questions from ${selectedSubject}.`,
+          `Loads 100 random questions from ${mockSubject}.`,
           "The maximum score for this run is 100 coins.",
           "Wrong answers remove 1 coin and also go into your mistake library."
         ]
@@ -152,7 +148,7 @@ export function HomeScreen() {
         ]
       }
     ],
-    [selectedCustomCount, selectedSubject, user?.Mistake_IDs]
+    [mockSubject, selectedCustomCount, selectedSubject, user?.Mistake_IDs]
   );
 
   const handleSaveName = async () => {
@@ -307,6 +303,38 @@ export function HomeScreen() {
             ))}
           </div>
 
+          <div className="mt-6 rounded-[28px] border border-cyan-400/20 bg-cyan-500/5 p-4">
+            <div className="flex items-end justify-between gap-3">
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-[0.3em] text-white/45">
+                  Mock Exam Subject
+                </p>
+                <p className="mt-2 text-lg font-black text-white">{mockSubject}</p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setActivePreset(modePresets.find((preset) => preset.mode === "mock") ?? null)}
+                className="rounded-full border border-white/10 bg-white/5 px-3 py-2 text-xs uppercase tracking-[0.24em] text-white/70"
+              >
+                Start mock
+              </button>
+            </div>
+            <div className="mt-3 flex gap-2 overflow-x-auto pb-1 hide-scrollbar">
+              {SUBJECTS.filter((subject) => subject !== "All_Questions").map((subject) => (
+                <SubjectChip
+                  key={subject}
+                  active={mockSubject === subject}
+                  onClick={() => setMockSubject(subject)}
+                >
+                  {subject}
+                </SubjectChip>
+              ))}
+            </div>
+            <p className="mt-3 text-xs uppercase tracking-[0.24em] text-white/35">
+              Mock exam always focuses on one chosen subject.
+            </p>
+          </div>
+
           <div className="mt-6 rounded-[28px] border border-white/10 bg-black/20 p-4">
             <p className="text-xs font-semibold uppercase tracking-[0.3em] text-white/45">
               Subject Filter
@@ -322,6 +350,9 @@ export function HomeScreen() {
                 </SubjectChip>
               ))}
             </div>
+            <p className="mt-3 text-xs uppercase tracking-[0.24em] text-white/35">
+              This filter is used for custom mixed runs. Mock exam uses its own subject picker above.
+            </p>
 
             <div className="mt-5">
               <p className="text-xs font-semibold uppercase tracking-[0.3em] text-white/45">

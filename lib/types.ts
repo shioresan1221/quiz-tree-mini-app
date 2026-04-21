@@ -45,3 +45,10 @@ export type UpdateProgressPayload = {
   wrongIncrement?: number;
   correctIds?: string;
 };
+
+export type AccessRecord = {
+  Telegram_ID: string;
+  Username: string;
+  Active: string;
+  Approved_By?: string;
+};
