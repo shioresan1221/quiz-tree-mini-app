@@ -9,8 +9,8 @@ import { QuestionRecord, QuestionMode, UserRecord } from "@/lib/types";
 import { useTelegramProfile } from "@/components/telegram-provider";
 import { joinMistakes } from "@/lib/game";
 
-const correctReward = 100;
-const wrongPenalty = 50;
+const correctReward = 1;
+const wrongPenalty = 1;
 
 export function QuizScreen() {
   const searchParams = useSearchParams();
@@ -79,13 +79,13 @@ export function QuizScreen() {
   const modeRule = useMemo(() => {
     switch (mode) {
       case "mock":
-        return `100 random ${subject ?? "subject"} questions with full reward and penalty rules.`;
+        return `100 random ${subject ?? "subject"} questions. Each right answer adds 1 coin and each wrong answer removes 1 coin.`;
       case "custom":
-        return `Short-form session with ${count} selected items.`;
+        return `Short-form session with ${count} selected items and a maximum of ${count} possible coins.`;
       case "review":
-        return "You are only seeing questions saved in your mistake library.";
+        return "You are only seeing questions saved in your mistake library, and wrong answers can still pull your plant back down.";
       default:
-        return "Swipe up stays locked until the answer on screen is correct.";
+        return "Swipe up stays locked until the answer on screen is correct. Right answers add 1 coin, wrong answers remove 1 coin.";
     }
   }, [count, mode, subject]);
 

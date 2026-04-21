@@ -6,7 +6,6 @@ import { useEffect, useMemo, useState } from "react";
 import {
   fetchLeaderboard,
   fetchOrCreateUser,
-  syncTapReward,
   updateDisplayName
 } from "@/lib/api";
 import {
@@ -22,8 +21,8 @@ import { UserRecord } from "@/lib/types";
 
 const SUBJECTS = [
   "All_Questions",
-  "Agri Economics & Marketing",
-  "Agri Extension & Communication",
+  "Agricultural Economics and Marketing",
+  "Agricultural Extension and Communication",
   "Animal Science",
   "Crop Protection",
   "Crop Science",
@@ -45,9 +44,8 @@ export function HomeScreen() {
   const { profile, ready } = useTelegramProfile();
   const [user, setUser] = useState<UserRecord | null>(null);
   const [leaderboard, setLeaderboard] = useState<UserRecord[]>([]);
-  const [isSyncing, setIsSyncing] = useState(false);
   const [isSavingName, setIsSavingName] = useState(false);
-  const [selectedSubject, setSelectedSubject] = useState<string>("Math");
+  const [selectedSubject, setSelectedSubject] = useState<string>("All_Questions");
   const [selectedCustomCount, setSelectedCustomCount] = useState<number>(CUSTOM_COUNTS[0]);
   const [activePreset, setActivePreset] = useState<ModePreset | null>(null);
   const [draftName, setDraftName] = useState("");
@@ -93,13 +91,14 @@ export function HomeScreen() {
         mode: "standard",
         title: "Standard Feed",
         eyebrow: "Swipe Mode",
-        summary: "TikTok-style learning stream with one-card-at-a-time pressure.",
+        summary:
+          "Vertical learning stream. Your plant score mirrors your performance in real time.",
         accent: "from-fuchsia-500/30 via-rose-400/10 to-cyan-400/20",
         getHref: () => "/quiz?mode=standard",
         rules: [
           "Swipe stays locked until you answer the current card correctly.",
-          "Correct answers give +100 coins.",
-          "Wrong answers remove 50 coins and keep you on the same card."
+          "Correct answers give +1 coin.",
+          "Wrong answers remove 1 coin and keep you on the same card."
         ]
       },
       {
@@ -117,8 +116,8 @@ export function HomeScreen() {
           selectedSubject === "All_Questions"
             ? "Loads 100 random questions from the full question bank."
             : `Loads 100 random questions from ${selectedSubject}.`,
-          "Use this when you want a deep subject-only session.",
-          "Wrong answers still cost 50 coins and go into your mistake library."
+          "The maximum score for this run is 100 coins.",
+          "Wrong answers remove 1 coin and also go into your mistake library."
         ]
       },
       {
@@ -131,8 +130,8 @@ export function HomeScreen() {
           `/quiz?mode=review&mistakes=${encodeURIComponent(user?.Mistake_IDs ?? "")}`,
         rules: [
           "Only questions listed in your Mistake_IDs are shown.",
-          "If your library is empty, this mode will have nothing to play.",
-          "Use review runs to clean weak topics before a mock exam."
+          "Correct answers still give +1 coin.",
+          "Wrong answers remove 1 coin, so the plant can downgrade here too."
         ]
       },
       {
@@ -149,27 +148,12 @@ export function HomeScreen() {
         rules: [
           `Loads exactly ${selectedCustomCount} random questions.`,
           `Current subject filter: ${selectedSubject === "All_Questions" ? "None, using all topics" : selectedSubject}.`,
-          "Best for quick bursts, daily streaks, or targeted revision."
+          `The maximum score for this run is ${selectedCustomCount} coins.`
         ]
       }
     ],
     [selectedCustomCount, selectedSubject, user?.Mistake_IDs]
   );
-
-  const handleTap = async () => {
-    if (!user || isSyncing) {
-      return;
-    }
-
-    setIsSyncing(true);
-    try {
-      const updated = await syncTapReward(user.Telegram_ID, user.Username, 10);
-      setUser(updated);
-      setLeaderboard((current) => upsertLeaderboard(current, updated));
-    } finally {
-      setIsSyncing(false);
-    }
-  };
 
   const handleSaveName = async () => {
     const nextName = draftName.trim();
@@ -204,7 +188,7 @@ export function HomeScreen() {
                 </h1>
                 <p className="mt-3 max-w-[32ch] text-sm leading-6 text-white/65">
                   {ready
-                    ? `${profile.firstName}, farm coins here and jump into vertical quiz rounds with strict swipe rules.`
+                    ? `${profile.firstName}, your plant now grows from quiz performance. Correct answers add coins, while wrong answers pull the plant back down automatically.`
                     : "Connecting your Telegram profile and loading your quiz room."}
                 </p>
                 <button
@@ -230,11 +214,11 @@ export function HomeScreen() {
             <div className="mt-5 grid gap-4 rounded-[32px] border border-white/10 bg-white/5 p-4 backdrop-blur md:grid-cols-[1.1fr_0.9fr]">
               <div>
                 <p className="text-xs font-semibold uppercase tracking-[0.3em] text-white/45">
-                  Farming Stage
+                  Plant Progress
                 </p>
                 <h2 className="mt-3 text-2xl font-black">{stage.name}</h2>
                 <p className="mt-2 text-sm leading-6 text-white/60">
-                  Every tap adds `+10` Knowledge Coins and pushes your tree to the next evolution.
+                  Each correct question gives `+1` coin. Each wrong answer takes `1` coin back, so the plant can upgrade or downgrade based on your answers.
                 </p>
                 <div className="mt-5 h-2 overflow-hidden rounded-full bg-white/10">
                   <div
@@ -252,14 +236,10 @@ export function HomeScreen() {
               <div className="relative flex items-center justify-center overflow-hidden rounded-[28px] border border-white/10 bg-[linear-gradient(180deg,rgba(255,255,255,0.06),rgba(255,255,255,0.02))] p-6">
                 <div className="absolute h-40 w-40 rounded-full bg-fuchsia-500/20 blur-3xl" />
                 <div className="absolute h-32 w-32 rounded-full bg-cyan-400/20 blur-3xl" />
-                <button
-                  type="button"
-                  onClick={handleTap}
-                  className="relative inline-flex h-44 w-44 items-center justify-center rounded-full border border-white/15 bg-black/35 text-8xl shadow-[0_0_0_12px_rgba(255,255,255,0.04),0_20px_50px_rgba(0,0,0,0.45)] transition duration-150 active:scale-95"
-                >
+                <div className="relative inline-flex h-44 w-44 items-center justify-center rounded-full border border-white/15 bg-black/35 text-8xl shadow-[0_0_0_12px_rgba(255,255,255,0.04),0_20px_50px_rgba(0,0,0,0.45)]">
                   <span className="absolute inset-3 rounded-full border border-white/10" />
                   <span className="relative">{stage.icon}</span>
-                </button>
+                </div>
               </div>
             </div>
           </div>
@@ -393,7 +373,7 @@ export function HomeScreen() {
               ))
             ) : (
               <div className="rounded-[26px] border border-white/10 bg-white/5 px-4 py-5 text-sm leading-6 text-white/65">
-                No leaderboard entries yet. Save your name and start farming to appear here.
+                No leaderboard entries yet. Save your name and answer questions correctly to appear here.
               </div>
             )}
           </div>

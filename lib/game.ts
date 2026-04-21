@@ -1,13 +1,13 @@
 export const LEVELS = [
-  { index: 0, name: "Seed", icon: "🌱", minCoins: 0, maxCoins: 499 },
-  { index: 1, name: "Sprout", icon: "🌿", minCoins: 500, maxCoins: 1499 },
-  { index: 2, name: "Sapling", icon: "🪴", minCoins: 1500, maxCoins: 3499 },
-  { index: 3, name: "Mature Tree", icon: "🌳", minCoins: 3500, maxCoins: 6999 },
+  { index: 0, name: "Seed", icon: "🌱", minCoins: 0, maxCoins: 24 },
+  { index: 1, name: "Sprout", icon: "🌿", minCoins: 25, maxCoins: 74 },
+  { index: 2, name: "Sapling", icon: "🪴", minCoins: 75, maxCoins: 179 },
+  { index: 3, name: "Mature Tree", icon: "🌳", minCoins: 180, maxCoins: 359 },
   {
     index: 4,
     name: "Ancient Tree",
     icon: "👑",
-    minCoins: 7000,
+    minCoins: 360,
     maxCoins: Number.POSITIVE_INFINITY
   }
 ] as const;
