@@ -107,8 +107,8 @@ export function HomeScreen() {
         eyebrow: "100 Questions",
         summary:
           selectedSubject === "All_Questions"
-            ? "Full mixed mock exam using 100 random questions from every topic."
-            : `Full subject drill using 100 random ${selectedSubject} items.`,
+            ? "Mock exam using 100 random questions from the full bank."
+            : `Mock exam using 100 random ${selectedSubject} questions.`,
         accent: "from-cyan-500/30 via-sky-400/10 to-blue-500/25",
         getHref: () =>
           `/quiz?mode=mock&subject=${encodeURIComponent(selectedSubject)}&count=100`,

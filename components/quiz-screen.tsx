@@ -79,7 +79,7 @@ export function QuizScreen() {
   const modeRule = useMemo(() => {
     switch (mode) {
       case "mock":
-        return `100 random ${subject ?? "subject"} questions. Each right answer adds 1 coin and each wrong answer removes 1 coin.`;
+        return `This mock exam uses 100 random ${subject ?? "subject"} questions. Each right answer adds 1 coin and each wrong answer removes 1 coin.`;
       case "custom":
         return `Short-form session with ${count} selected items and a maximum of ${count} possible coins.`;
       case "review":

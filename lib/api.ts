@@ -119,7 +119,19 @@ export async function fetchQuestions({
     questions = questions.filter((question) => mistakeSet.has(question.ID));
   }
 
-  return shuffle(questions).slice(0, mode === "standard" ? Math.max(count ?? 20, 20) : count);
+  if (mode === "mock") {
+    return shuffle(questions).slice(0, 100);
+  }
+
+  if (mode === "custom") {
+    return shuffle(questions).slice(0, count);
+  }
+
+  if (mode === "review") {
+    return questions;
+  }
+
+  return shuffle(questions).slice(0, Math.max(count ?? 20, 20));
 }
 
 function normalizeUser(user: UserRecord): UserRecord {
