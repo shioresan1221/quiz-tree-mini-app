@@ -101,9 +101,10 @@ export async function fetchQuestions({
   );
 
   let questions = rows.map(normalizeQuestion);
+  const useAllSubjects = !subject || subject === "All_Questions";
 
   if (mode === "mock" || mode === "custom") {
-    questions = subject
+    questions = !useAllSubjects
       ? questions.filter((question) => question.Subject === subject)
       : questions;
   }

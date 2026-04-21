@@ -20,7 +20,15 @@ import { SubjectChip } from "@/components/subject-chip";
 import { useTelegramProfile } from "@/components/telegram-provider";
 import { UserRecord } from "@/lib/types";
 
-const SUBJECTS = ["Math", "Science", "History", "English", "General Knowledge"];
+const SUBJECTS = [
+  "All_Questions",
+  "Agri Economics & Marketing",
+  "Agri Extension & Communication",
+  "Animal Science",
+  "Crop Protection",
+  "Crop Science",
+  "Soil Science"
+];
 
 type ModePreset = {
   mode: "standard" | "mock" | "custom" | "review";
@@ -98,12 +106,17 @@ export function HomeScreen() {
         mode: "mock",
         title: "Mock Exam",
         eyebrow: "100 Questions",
-        summary: `Full subject drill using 100 random ${selectedSubject} items.`,
+        summary:
+          selectedSubject === "All_Questions"
+            ? "Full mixed mock exam using 100 random questions from every topic."
+            : `Full subject drill using 100 random ${selectedSubject} items.`,
         accent: "from-cyan-500/30 via-sky-400/10 to-blue-500/25",
         getHref: () =>
           `/quiz?mode=mock&subject=${encodeURIComponent(selectedSubject)}&count=100`,
         rules: [
-          `Loads 100 random questions from ${selectedSubject}.`,
+          selectedSubject === "All_Questions"
+            ? "Loads 100 random questions from the full question bank."
+            : `Loads 100 random questions from ${selectedSubject}.`,
           "Use this when you want a deep subject-only session.",
           "Wrong answers still cost 50 coins and go into your mistake library."
         ]
@@ -126,13 +139,16 @@ export function HomeScreen() {
         mode: "custom",
         title: "Custom Exam",
         eyebrow: `${selectedCustomCount} Questions`,
-        summary: `Build a shorter ${selectedSubject} session with a fixed question count.`,
+        summary:
+          selectedSubject === "All_Questions"
+            ? `Build a shorter mixed session with ${selectedCustomCount} random questions.`
+            : `Build a shorter ${selectedSubject} session with a fixed question count.`,
         accent: "from-emerald-500/30 via-lime-400/10 to-teal-500/20",
         getHref: () =>
           `/quiz?mode=custom&count=${selectedCustomCount}&subject=${encodeURIComponent(selectedSubject)}`,
         rules: [
           `Loads exactly ${selectedCustomCount} random questions.`,
-          `Current subject filter: ${selectedSubject}.`,
+          `Current subject filter: ${selectedSubject === "All_Questions" ? "None, using all topics" : selectedSubject}.`,
           "Best for quick bursts, daily streaks, or targeted revision."
         ]
       }
