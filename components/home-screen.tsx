@@ -234,12 +234,34 @@ export function HomeScreen() {
               </div>
 
               <div className="relative flex items-center justify-center overflow-hidden rounded-[28px] border border-white/10 bg-[linear-gradient(180deg,rgba(255,255,255,0.06),rgba(255,255,255,0.02))] p-6">
-                <div className="absolute h-40 w-40 rounded-full bg-fuchsia-500/20 blur-3xl" />
-                <div className="absolute h-32 w-32 rounded-full bg-cyan-400/20 blur-3xl" />
-                <div className="relative inline-flex h-44 w-44 items-center justify-center rounded-full border border-white/15 bg-black/35 text-8xl shadow-[0_0_0_12px_rgba(255,255,255,0.04),0_20px_50px_rgba(0,0,0,0.45)]">
+                <motion.div
+                  animate={{
+                    scale: [1, 1.08, 1],
+                    opacity: [0.24, 0.38, 0.24]
+                  }}
+                  transition={{ duration: 4.5, repeat: Number.POSITIVE_INFINITY, ease: "easeInOut" }}
+                  className="absolute h-40 w-40 rounded-full bg-fuchsia-500/20 blur-3xl"
+                />
+                <motion.div
+                  animate={{
+                    scale: [1, 1.12, 1],
+                    opacity: [0.22, 0.34, 0.22]
+                  }}
+                  transition={{ duration: 5.2, repeat: Number.POSITIVE_INFINITY, ease: "easeInOut", delay: 0.4 }}
+                  className="absolute h-32 w-32 rounded-full bg-cyan-400/20 blur-3xl"
+                />
+                <motion.div
+                  animate={getPlantAnimation(stage.index)}
+                  transition={{
+                    duration: 3.6,
+                    repeat: Number.POSITIVE_INFINITY,
+                    ease: "easeInOut"
+                  }}
+                  className="relative inline-flex h-44 w-44 items-center justify-center rounded-full border border-white/15 bg-black/35 text-8xl shadow-[0_0_0_12px_rgba(255,255,255,0.04),0_20px_50px_rgba(0,0,0,0.45)]"
+                >
                   <span className="absolute inset-3 rounded-full border border-white/10" />
                   <span className="relative">{stage.icon}</span>
-                </div>
+                </motion.div>
               </div>
             </div>
           </div>
@@ -361,7 +383,7 @@ export function HomeScreen() {
                       <p className="text-lg font-black">{entry.Username}</p>
                       <p className="mt-1 text-xs uppercase tracking-[0.24em] text-white/40">
                         {entry.Level >= 5
-                          ? `Lvl 5 · ${entry.Correct_Answers} leaves`
+                          ? `Lvl 5 · ${countTrackedIds(entry.Correct_IDs)} leaves`
                           : `Level ${entry.Level}`}
                         {entry.Telegram_ID === user?.Telegram_ID ? " · You" : ""}
                       </p>
@@ -523,4 +545,22 @@ function upsertLeaderboard(current: UserRecord[], updated: UserRecord) {
   ];
 
   return next.sort((left, right) => right.Coins - left.Coins).slice(0, 8);
+}
+
+function countTrackedIds(value: string) {
+  return value
+    .split(",")
+    .map((id) => id.trim())
+    .filter(Boolean).length;
+}
+
+function getPlantAnimation(stageIndex: number) {
+  const sway = stageIndex >= 4 ? 6 : stageIndex >= 2 ? 4 : 2;
+  const lift = stageIndex >= 4 ? 10 : 7;
+
+  return {
+    y: [0, -lift, 0],
+    rotate: [-sway, sway, -sway],
+    scale: [1, 1.03, 1]
+  };
 }

@@ -13,7 +13,9 @@ export async function fetchOrCreateUser(telegramId: string, username: string) {
     Coins: 0,
     Level: 1,
     Mistake_IDs: "",
-    Correct_Answers: 0
+    Correct_Answers: 0,
+    Wrong_Answers: 0,
+    Correct_IDs: ""
   };
 
   await sheetDbRequest(`${getBaseUrl()}?sheet=${encodeURIComponent(getUsersSheet())}`, {
@@ -53,7 +55,9 @@ export async function submitAnswerResult(payload: UpdateProgressPayload) {
       Coins: 0,
       Level: 1,
       Mistake_IDs: "",
-      Correct_Answers: 0
+      Correct_Answers: 0,
+      Wrong_Answers: 0,
+      Correct_IDs: ""
     } satisfies UserRecord);
 
   const nextCoins =
@@ -67,7 +71,9 @@ export async function submitAnswerResult(payload: UpdateProgressPayload) {
     Coins: nextCoins,
     Level: coinsToLevel(nextCoins),
     Mistake_IDs: payload.mistakeIds ?? existing.Mistake_IDs ?? "",
-    Correct_Answers: Number(existing.Correct_Answers ?? 0) + (payload.correctIncrement ?? 0)
+    Correct_Answers: Number(existing.Correct_Answers ?? 0) + (payload.correctIncrement ?? 0),
+    Wrong_Answers: Number(existing.Wrong_Answers ?? 0) + (payload.wrongIncrement ?? 0),
+    Correct_IDs: payload.correctIds ?? existing.Correct_IDs ?? ""
   };
 
   await sheetDbRequest(
@@ -80,7 +86,9 @@ export async function submitAnswerResult(payload: UpdateProgressPayload) {
           Coins: updated.Coins,
           Level: updated.Level,
           Mistake_IDs: updated.Mistake_IDs,
-          Correct_Answers: updated.Correct_Answers
+          Correct_Answers: updated.Correct_Answers,
+          Wrong_Answers: updated.Wrong_Answers,
+          Correct_IDs: updated.Correct_IDs
         }
       })
     }
@@ -143,7 +151,9 @@ function normalizeUser(user: UserRecord): UserRecord {
     ...user,
     Coins: Number(user.Coins ?? 0),
     Level: Number(user.Level ?? 1),
-    Correct_Answers: Number(user.Correct_Answers ?? 0)
+    Correct_Answers: Number(user.Correct_Answers ?? 0),
+    Wrong_Answers: Number(user.Wrong_Answers ?? 0),
+    Correct_IDs: user.Correct_IDs ?? ""
   };
 }
 

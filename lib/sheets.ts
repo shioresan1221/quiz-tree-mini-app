@@ -99,7 +99,9 @@ export async function ensureUser({
     Coins: 0,
     Level: 1,
     Mistake_IDs: "",
-    Correct_Answers: 0
+    Correct_Answers: 0,
+    Wrong_Answers: 0,
+    Correct_IDs: ""
   };
 
   if (!SHEETDB_BASE_URL) {
@@ -130,7 +132,9 @@ export async function updateUserProgress(payload: UpdateProgressPayload) {
     Coins: nextCoins,
     Level: coinsToLevel(nextCoins),
     Mistake_IDs: payload.mistakeIds ?? existing.Mistake_IDs ?? "",
-    Correct_Answers: Number(existing.Correct_Answers ?? 0) + (payload.correctIncrement ?? 0)
+    Correct_Answers: Number(existing.Correct_Answers ?? 0) + (payload.correctIncrement ?? 0),
+    Wrong_Answers: Number(existing.Wrong_Answers ?? 0) + (payload.wrongIncrement ?? 0),
+    Correct_IDs: payload.correctIds ?? existing.Correct_IDs ?? ""
   };
 
   if (!SHEETDB_BASE_URL) {
@@ -147,7 +151,9 @@ export async function updateUserProgress(payload: UpdateProgressPayload) {
           Coins: updated.Coins,
           Level: updated.Level,
           Mistake_IDs: updated.Mistake_IDs,
-          Correct_Answers: updated.Correct_Answers
+          Correct_Answers: updated.Correct_Answers,
+          Wrong_Answers: updated.Wrong_Answers,
+          Correct_IDs: updated.Correct_IDs
         }
       })
     }
@@ -191,7 +197,9 @@ function normalizeUser(record: UserRecord): UserRecord {
     Coins: Number(record.Coins ?? 0),
     Level: Number(record.Level ?? 1),
     Mistake_IDs: record.Mistake_IDs ?? "",
-    Correct_Answers: Number(record.Correct_Answers ?? 0)
+    Correct_Answers: Number(record.Correct_Answers ?? 0),
+    Wrong_Answers: Number(record.Wrong_Answers ?? 0),
+    Correct_IDs: record.Correct_IDs ?? ""
   };
 }
 

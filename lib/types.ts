@@ -16,6 +16,8 @@ export type UserRecord = {
   Level: number;
   Mistake_IDs: string;
   Correct_Answers: number;
+  Wrong_Answers: number;
+  Correct_IDs: string;
 };
 
 export type QuestionMode = "standard" | "mock" | "custom" | "review";
@@ -40,4 +42,6 @@ export type UpdateProgressPayload = {
   absoluteCoins?: number;
   mistakeIds?: string;
   correctIncrement?: number;
+  wrongIncrement?: number;
+  correctIds?: string;
 };

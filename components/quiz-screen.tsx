@@ -103,13 +103,18 @@ export function QuizScreen() {
       const updatedMistakes = isCorrect
         ? user.Mistake_IDs
         : joinMistakes(user.Mistake_IDs, currentQuestion.ID);
+      const updatedCorrectIds = isCorrect
+        ? joinTrackedIds(user.Correct_IDs, currentQuestion.ID)
+        : user.Correct_IDs;
 
       const updatedUser = await submitAnswerResult({
         telegramId: user.Telegram_ID,
         username: user.Username,
         coinDelta: isCorrect ? correctReward : -wrongPenalty,
         mistakeIds: updatedMistakes,
-        correctIncrement: isCorrect ? 1 : 0
+        correctIncrement: isCorrect ? 1 : 0,
+        wrongIncrement: isCorrect ? 0 : 1,
+        correctIds: updatedCorrectIds
       });
 
       setUser(updatedUser);
@@ -225,6 +230,13 @@ export function QuizScreen() {
                   </div>
 
                   <div className="flex flex-col items-center gap-3">
+                    <motion.div
+                      animate={{ y: [0, -6, 0], scale: [1, 1.04, 1] }}
+                      transition={{ duration: 3.2, repeat: Number.POSITIVE_INFINITY, ease: "easeInOut" }}
+                      className="flex h-16 w-16 items-center justify-center rounded-full border border-white/10 bg-white/5 text-3xl backdrop-blur"
+                    >
+                      {user ? getStageIcon(user.Level) : "🌰"}
+                    </motion.div>
                     <ActionPill label="coins" value={`+${correctReward}`} />
                     <ActionPill label="risk" value={`-${wrongPenalty}`} />
                     <ActionPill label="next" value={swipeEnabled ? "on" : "off"} />
@@ -330,4 +342,30 @@ function ActionPill({ label, value }: { label: string; value: string }) {
       <p className="mt-2 text-sm font-black text-white">{value}</p>
     </div>
   );
+}
+
+function getStageIcon(level: number) {
+  switch (level) {
+    case 1:
+      return "🌰";
+    case 2:
+      return "🌱";
+    case 3:
+      return "🌿";
+    case 4:
+      return "🪴";
+    default:
+      return "🌳";
+  }
+}
+
+function joinTrackedIds(existing: string, nextId: string) {
+  const set = new Set(
+    existing
+      .split(",")
+      .map((id) => id.trim())
+      .filter(Boolean)
+  );
+  set.add(nextId);
+  return Array.from(set).join(",");
 }
